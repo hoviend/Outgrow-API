@@ -13,9 +13,9 @@ type CreateOrganizationAccountPayload struct {
 	Code              string  `json:"code" validate:"required"`
 }
 
-type GetParentAccountSelectionResponse struct {
-	AccountType DefaultAccountResponse   `json:"account_type"`
-	Categories  []DefaultAccountResponse `json:"categories"`
+type GetAccountCategoryResponse struct {
+	DefaultAccountResponse
+	AccountType DefaultAccountResponse `json:"account_type"`
 }
 
 type GetAccountSelectionResponse struct {
@@ -42,6 +42,12 @@ type GetOrganizationAccountsOption struct {
 type GetOrganizationAccountTypesOption struct {
 	Paginate                  *PaginateParam
 	WithCategoriesAndAccounts bool
+}
+
+type GetAccountCategoriesOption struct {
+	Paginate           *PaginateParam
+	OrganizationID     uuid.UUID
+	CategoryNameFilter string
 }
 
 type GetChartofAccountsResponse struct {

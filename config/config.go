@@ -23,8 +23,7 @@ type Config struct {
 	DBPort     int    `mapstructure:"DB_PORT"`
 	DBName     string `mapstructure:"DB_NAME"`
 
-	PrivateKey  ed25519.PrivateKey `mapstructure:"-"`
-	UserInfoKey string             `mapstructure:"USER_INFO_KEY",default:"userInfoKey"`
+	PrivateKey ed25519.PrivateKey `mapstructure:"-"`
 }
 
 func GetConfig() *Config {

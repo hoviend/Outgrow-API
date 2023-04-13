@@ -120,7 +120,7 @@ func (h *OrganizationHandler) CreateOrganizationAccount(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(resp)
 }
 
-func (h *OrganizationHandler) GetOrganizationParentAccounts(c *fiber.Ctx) error {
+func (h *OrganizationHandler) GetOrganizationAccountCategories(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	organization, err := h.getOrganizationFromURL(c, nil)
@@ -131,31 +131,27 @@ func (h *OrganizationHandler) GetOrganizationParentAccounts(c *fiber.Ctx) error 
 	var query dto.GetAccountsParam
 	query.Page = c.QueryInt("page")
 	query.PerPage = c.QueryInt("per_page")
+	query.Name = c.Query("name")
 
-	opt := dto.GetOrganizationAccountTypesOption{
-		Paginate:                  &query.PaginateParam,
-		WithCategoriesAndAccounts: true,
+	opt := dto.GetAccountCategoriesOption{
+		Paginate:           &query.PaginateParam,
+		OrganizationID:     organization.ID,
+		CategoryNameFilter: query.Name,
 	}
 
-	accTypes, paginate, err := h.AccountService.GetOrganizationAccountTypes(ctx, organization.ID, opt)
+	categories, paginate, err := h.AccountService.GetAccountCategories(ctx, opt)
 	if err != nil {
 		return err
 	}
 
-	var respData []dto.GetParentAccountSelectionResponse
-	for _, at := range accTypes {
-		var data dto.GetParentAccountSelectionResponse
+	var respData []dto.GetAccountCategoryResponse
+	for _, cat := range categories {
+		var data dto.GetAccountCategoryResponse
 
-		data.AccountType.ID = at.ID
-		data.AccountType.Name = at.Name
-
-		for _, cat := range at.Edges.Categories {
-			d := dto.DefaultAccountResponse{
-				ID:   cat.ID,
-				Name: cat.Name,
-			}
-			data.Categories = append(data.Categories, d)
-		}
+		data.ID = cat.ID
+		data.Name = cat.Name
+		data.AccountType.ID = cat.Edges.Type.ID
+		data.AccountType.Name = cat.Edges.Type.Name
 
 		respData = append(respData, data)
 	}

@@ -58,7 +58,7 @@ func (h *RouteHandler) SetupRoutes(app *fiber.App, cfg *config.Config) {
 	organizationAPI := v1.Group("/organizations", middleware.GoogleIDTokenMiddleware())
 	organizationAPI.Get("/:id", h.OrganizationHandler.GetOrganization)
 	organizationAPI.Get("/:id/accounts", h.OrganizationHandler.GetOrganizationChartOfAccounts)
-	organizationAPI.Get("/:id/accounts/parents", h.OrganizationHandler.GetOrganizationParentAccounts)
+	organizationAPI.Get("/:id/accounts/categories", h.OrganizationHandler.GetOrganizationAccountCategories)
 	organizationAPI.Post("/:id/accounts", h.OrganizationHandler.CreateOrganizationAccount)
 	organizationAPI.Get("/:id/transactions", h.OrganizationHandler.GetOrganizationTransactions)
 	organizationAPI.Post("/:id/events", h.OrganizationHandler.CreateOrganizationEvent)
