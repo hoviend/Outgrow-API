@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -22,7 +23,8 @@ type MasterAccountType struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MasterAccountTypeQuery when eager-loading is set.
-	Edges MasterAccountTypeEdges `json:"edges"`
+	Edges        MasterAccountTypeEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // MasterAccountTypeEdges holds the relations/edges for other nodes in the graph.
@@ -55,7 +57,7 @@ func (*MasterAccountType) scanValues(columns []string) ([]any, error) {
 		case masteraccounttype.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type MasterAccountType", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -87,9 +89,17 @@ func (mat *MasterAccountType) assignValues(columns []string, values []any) error
 			} else if value.Valid {
 				mat.CreatedAt = value.Time
 			}
+		default:
+			mat.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the MasterAccountType.
+// This includes values selected through modifiers, order, etc.
+func (mat *MasterAccountType) Value(name string) (ent.Value, error) {
+	return mat.selectValues.Get(name)
 }
 
 // QueryCategories queries the "categories" edge of the MasterAccountType entity.

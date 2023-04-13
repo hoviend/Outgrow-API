@@ -220,6 +220,16 @@ func CodeHasSuffix(v string) predicate.OrganizationAccount {
 	return predicate.OrganizationAccount(sql.FieldHasSuffix(FieldCode, v))
 }
 
+// CodeIsNil applies the IsNil predicate on the "code" field.
+func CodeIsNil() predicate.OrganizationAccount {
+	return predicate.OrganizationAccount(sql.FieldIsNull(FieldCode))
+}
+
+// CodeNotNil applies the NotNil predicate on the "code" field.
+func CodeNotNil() predicate.OrganizationAccount {
+	return predicate.OrganizationAccount(sql.FieldNotNull(FieldCode))
+}
+
 // CodeEqualFold applies the EqualFold predicate on the "code" field.
 func CodeEqualFold(v string) predicate.OrganizationAccount {
 	return predicate.OrganizationAccount(sql.FieldEqualFold(FieldCode, v))
@@ -324,11 +334,7 @@ func HasTransactions() predicate.OrganizationAccount {
 // HasTransactionsWith applies the HasEdge predicate on the "transactions" edge with a given conditions (other predicates).
 func HasTransactionsWith(preds ...predicate.Transaction) predicate.OrganizationAccount {
 	return predicate.OrganizationAccount(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TransactionsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TransactionsTable, TransactionsColumn),
-		)
+		step := newTransactionsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -351,11 +357,7 @@ func HasAccCategory() predicate.OrganizationAccount {
 // HasAccCategoryWith applies the HasEdge predicate on the "accCategory" edge with a given conditions (other predicates).
 func HasAccCategoryWith(preds ...predicate.OrganizationAccountCategory) predicate.OrganizationAccount {
 	return predicate.OrganizationAccount(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AccCategoryInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, AccCategoryTable, AccCategoryColumn),
-		)
+		step := newAccCategoryStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

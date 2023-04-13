@@ -184,11 +184,7 @@ func HasCategories() predicate.MasterAccountType {
 // HasCategoriesWith applies the HasEdge predicate on the "categories" edge with a given conditions (other predicates).
 func HasCategoriesWith(preds ...predicate.MasterAccountCategory) predicate.MasterAccountType {
 	return predicate.MasterAccountType(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(CategoriesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CategoriesTable, CategoriesColumn),
-		)
+		step := newCategoriesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

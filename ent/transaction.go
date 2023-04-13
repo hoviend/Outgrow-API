@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
@@ -36,7 +37,8 @@ type Transaction struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TransactionQuery when eager-loading is set.
-	Edges TransactionEdges `json:"edges"`
+	Edges        TransactionEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // TransactionEdges holds the relations/edges for other nodes in the graph.
@@ -92,7 +94,7 @@ func (*Transaction) scanValues(columns []string) ([]any, error) {
 		case transaction.FieldID, transaction.FieldEventID:
 			values[i] = new(uuid.UUID)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Transaction", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -154,9 +156,17 @@ func (t *Transaction) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.CreatedAt = value.Time
 			}
+		default:
+			t.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Transaction.
+// This includes values selected through modifiers, order, etc.
+func (t *Transaction) Value(name string) (ent.Value, error) {
+	return t.selectValues.Get(name)
 }
 
 // QueryAccount queries the "account" edge of the Transaction entity.

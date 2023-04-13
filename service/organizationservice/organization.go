@@ -23,16 +23,16 @@ func NewOrganizationService(entClient *ent.Client, config *config.Config) *Organ
 	}
 }
 
-func (svc *OrganizationService) JoinOrganization(ctx context.Context, publicID string, user *ent.User) error {
+func (svc *OrganizationService) JoinOrganization(ctx context.Context, publicID string, user *ent.User) (*ent.Organization, error) {
 
 	org, err := svc.entClient.Organization.Query().
 		Where(organization.PublicID(publicID)).
 		Only(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return org.Update().AddUsers(user).Exec(ctx)
+	return org.Update().AddUsers(user).Save(ctx)
 }
 
 func (svc *OrganizationService) CopyMasters(
@@ -41,12 +41,21 @@ func (svc *OrganizationService) CopyMasters(
 	masterEventTypes []*ent.MasterEventType,
 	masterAccountTypes []*ent.MasterAccountType,
 ) error {
-	//TODO: would be better if run in 1 transaction?
-	orgEventTypes := make([]*ent.OrganizationEventTypeCreate, 0)
-	orgAccounts := make([]*ent.OrganizationAccountCreate, 0)
+	// TODO: tx need to recheck later
+	tx, err := svc.entClient.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		tx.Commit()
+	}()
 
 	for _, at := range masterAccountTypes {
-		oat, err := svc.entClient.OrganizationAccountType.Create().
+		oat, err := tx.OrganizationAccountType.Create().
 			SetOrganizationID(organizationID).
 			SetName(at.Name).
 			Save(ctx)
@@ -56,7 +65,7 @@ func (svc *OrganizationService) CopyMasters(
 		}
 
 		for _, ac := range at.Edges.Categories {
-			oac, err := svc.entClient.OrganizationAccountCategory.Create().
+			oac, err := tx.OrganizationAccountCategory.Create().
 				SetTypeID(oat.ID).
 				SetName(ac.Name).
 				SetDescription(ac.Description).Save(ctx)
@@ -65,15 +74,16 @@ func (svc *OrganizationService) CopyMasters(
 				return err
 			}
 
+			orgAccounts := make([]*ent.OrganizationAccountCreate, 0)
 			for _, a := range ac.Edges.Accounts {
-				oa := svc.entClient.OrganizationAccount.Create().
+				oa := tx.OrganizationAccount.Create().
 					SetCategoryID(oac.ID).
 					SetName(a.Name)
 
 				orgAccounts = append(orgAccounts, oa)
 			}
 
-			_, err = svc.entClient.OrganizationAccount.CreateBulk(orgAccounts...).
+			_, err = tx.OrganizationAccount.CreateBulk(orgAccounts...).
 				Save(ctx)
 			if err != nil {
 				return err
@@ -81,8 +91,9 @@ func (svc *OrganizationService) CopyMasters(
 		}
 	}
 
+	orgEventTypes := make([]*ent.OrganizationEventTypeCreate, 0)
 	for _, et := range masterEventTypes {
-		oet := svc.entClient.OrganizationEventType.Create().
+		oet := tx.OrganizationEventType.Create().
 			SetName(et.Name).
 			SetDescription(et.Description).
 			SetRules(et.Rules).
@@ -91,7 +102,7 @@ func (svc *OrganizationService) CopyMasters(
 		orgEventTypes = append(orgEventTypes, oet)
 	}
 
-	_, err := svc.entClient.OrganizationEventType.CreateBulk(orgEventTypes...).
+	_, err = tx.OrganizationEventType.CreateBulk(orgEventTypes...).
 		Save(ctx)
 	if err != nil {
 		return err

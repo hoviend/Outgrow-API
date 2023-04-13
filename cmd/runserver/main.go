@@ -7,10 +7,12 @@ import (
 	"outgrow/db"
 	"outgrow/handler"
 	"outgrow/handler/authhandler"
+	"outgrow/handler/eventhandler"
 	"outgrow/handler/organizationhandler"
 	"outgrow/handler/userhandler"
 	"outgrow/service/accountservice"
 	"outgrow/service/authservice"
+	"outgrow/service/eventservice"
 	"outgrow/service/masterservice"
 	"outgrow/service/organizationservice"
 	"outgrow/service/transactionservice"
@@ -36,16 +38,19 @@ func main() {
 	organizationService := organizationservice.NewOrganizationService(client, config)
 	accountService := accountservice.NewAccountService(client, config)
 	transactionService := transactionservice.NewTransactionService(client, config)
+	eventService := eventservice.NewEventService(client, config)
 
 	// handler
 	authHandler := authhandler.NewAuthHandler(authService, userService)
 	userHandler := userhandler.NewUserHandler(userService, organizationService, masterService)
-	organizationHandler := organizationhandler.NewOrganizationHandler(organizationService, accountService, transactionService)
+	organizationHandler := organizationhandler.NewOrganizationHandler(organizationService, accountService, transactionService, eventService)
+	eventHandler := eventhandler.NewEventHandler(eventService, accountService)
 
 	routeHandler := handler.NewRouteHandler(
 		authHandler,
 		userHandler,
 		organizationHandler,
+		eventHandler,
 	)
 
 	routeHandler.SetupRoutes(app, config)

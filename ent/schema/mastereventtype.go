@@ -11,9 +11,9 @@ import (
 
 type EventRules struct {
 	AccountID       int                  `json:"account_id" validate:"required"`
-	TransactionType enum.TransactionType `json:"transaction_type" validate:"required, oneof=DEBIT CREDIT"`
-	Amount          float64              `json:"amount" validate:"required"`
-	RuleType        enum.EventRuleType   `json:"rule_type" validate:"required, oneof=PERCENTAGE FLAT"`
+	TransactionType enum.TransactionType `json:"transaction_type" validate:"oneof=DEBIT CREDIT"`
+	Amount          float64              `json:"amount" validate:"required,er_amount"`
+	RuleType        enum.EventRuleType   `json:"rule_type" validate:"oneof=PERCENTAGE FLAT"`
 }
 
 // MasterEventType holds the schema definition for the MasterEventType entity.

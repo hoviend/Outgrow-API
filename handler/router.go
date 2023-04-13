@@ -8,6 +8,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func NewFiberApp() *fiber.App {
@@ -37,6 +38,8 @@ func NewFiberApp() *fiber.App {
 
 func (h *RouteHandler) SetupRoutes(app *fiber.App, cfg *config.Config) {
 
+	app.Use(cors.New())
+
 	// Middleware
 	v1 := app.Group("/v1")
 
@@ -53,14 +56,19 @@ func (h *RouteHandler) SetupRoutes(app *fiber.App, cfg *config.Config) {
 
 	// Organization
 	organizationAPI := v1.Group("/organizations", middleware.GoogleIDTokenMiddleware())
-	organizationAPI.Get("/id/chart-of-accounts", h.OrganizationHandler.GetOrganizationChartOfAccounts)
+	organizationAPI.Get("/:id", h.OrganizationHandler.GetOrganization)
+	organizationAPI.Get("/:id/accounts", h.OrganizationHandler.GetOrganizationChartOfAccounts)
+	organizationAPI.Get("/:id/accounts/parents", h.OrganizationHandler.GetOrganizationParentAccounts)
 	organizationAPI.Post("/:id/accounts", h.OrganizationHandler.CreateOrganizationAccount)
-	organizationAPI.Get("/:id/accounts/selections", h.OrganizationHandler.GetOrganizationAccountsSelection)
-	// organizationAPI.Get("/:id/transactions", h.OrganizationHandler.GetOrganizationTransactions)
-	// organizationAPI.Post("/:id/events", h.OrganizationHandler.CreateOrganizationEvent)
-	organizationAPI.Post("/:id/events/types", h.OrganizationHandler.CreateOrganizationEventType)
+	organizationAPI.Get("/:id/transactions", h.OrganizationHandler.GetOrganizationTransactions)
+	organizationAPI.Post("/:id/events", h.OrganizationHandler.CreateOrganizationEvent)
 
+	organizationAPI.Post("/:id/events/types", h.OrganizationHandler.CreateOrganizationEventType)
 	organizationAPI.Get("/:id/events/types", h.OrganizationHandler.GetOrganizationEventTypes)
+
+	// Event
+	eventAPI := v1.Group("/events", middleware.GoogleIDTokenMiddleware())
+	eventAPI.Post("/simulations", h.EventHandler.GenerateEventSimulations)
 
 	// handle 404 as fallback
 	app.Use(func(c *fiber.Ctx) error {

@@ -24,7 +24,7 @@ import (
 type OrganizationQuery struct {
 	config
 	ctx              *QueryContext
-	order            []OrderFunc
+	order            []organization.Order
 	inters           []Interceptor
 	predicates       []predicate.Organization
 	withUsers        *UserQuery
@@ -62,7 +62,7 @@ func (oq *OrganizationQuery) Unique(unique bool) *OrganizationQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (oq *OrganizationQuery) Order(o ...OrderFunc) *OrganizationQuery {
+func (oq *OrganizationQuery) Order(o ...organization.Order) *OrganizationQuery {
 	oq.order = append(oq.order, o...)
 	return oq
 }
@@ -344,7 +344,7 @@ func (oq *OrganizationQuery) Clone() *OrganizationQuery {
 	return &OrganizationQuery{
 		config:           oq.config,
 		ctx:              oq.ctx.Clone(),
-		order:            append([]OrderFunc{}, oq.order...),
+		order:            append([]organization.Order{}, oq.order...),
 		inters:           append([]Interceptor{}, oq.inters...),
 		predicates:       append([]predicate.Organization{}, oq.predicates...),
 		withUsers:        oq.withUsers.Clone(),

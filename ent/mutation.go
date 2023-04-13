@@ -4003,9 +4003,22 @@ func (m *OrganizationAccountMutation) OldCode(ctx context.Context) (v string, er
 	return oldValue.Code, nil
 }
 
+// ClearCode clears the value of the "code" field.
+func (m *OrganizationAccountMutation) ClearCode() {
+	m.code = nil
+	m.clearedFields[organizationaccount.FieldCode] = struct{}{}
+}
+
+// CodeCleared returns if the "code" field was cleared in this mutation.
+func (m *OrganizationAccountMutation) CodeCleared() bool {
+	_, ok := m.clearedFields[organizationaccount.FieldCode]
+	return ok
+}
+
 // ResetCode resets all changes to the "code" field.
 func (m *OrganizationAccountMutation) ResetCode() {
 	m.code = nil
+	delete(m.clearedFields, organizationaccount.FieldCode)
 }
 
 // SetBalance sets the "balance" field.
@@ -4368,7 +4381,11 @@ func (m *OrganizationAccountMutation) AddField(name string, value ent.Value) err
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *OrganizationAccountMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(organizationaccount.FieldCode) {
+		fields = append(fields, organizationaccount.FieldCode)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -4381,6 +4398,11 @@ func (m *OrganizationAccountMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *OrganizationAccountMutation) ClearField(name string) error {
+	switch name {
+	case organizationaccount.FieldCode:
+		m.ClearCode()
+		return nil
+	}
 	return fmt.Errorf("unknown OrganizationAccount nullable field %s", name)
 }
 

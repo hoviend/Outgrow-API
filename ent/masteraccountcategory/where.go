@@ -289,11 +289,7 @@ func HasAccounts() predicate.MasterAccountCategory {
 // HasAccountsWith applies the HasEdge predicate on the "accounts" edge with a given conditions (other predicates).
 func HasAccountsWith(preds ...predicate.MasterAccount) predicate.MasterAccountCategory {
 	return predicate.MasterAccountCategory(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AccountsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AccountsTable, AccountsColumn),
-		)
+		step := newAccountsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -316,11 +312,7 @@ func HasAccType() predicate.MasterAccountCategory {
 // HasAccTypeWith applies the HasEdge predicate on the "accType" edge with a given conditions (other predicates).
 func HasAccTypeWith(preds ...predicate.MasterAccountType) predicate.MasterAccountCategory {
 	return predicate.MasterAccountCategory(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AccTypeInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, AccTypeTable, AccTypeColumn),
-		)
+		step := newAccTypeStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

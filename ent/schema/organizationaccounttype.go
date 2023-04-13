@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -19,7 +20,7 @@ type OrganizationAccountType struct {
 func (OrganizationAccountType) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("organization_id", uuid.UUID{}),
-		field.String("name").Unique().NotEmpty(),
+		field.String("name").NotEmpty(),
 		field.Time("created_at").Default(time.Now).Annotations(entsql.Default("CURRENT_TIMESTAMP")).Immutable(),
 	}
 }
@@ -33,5 +34,12 @@ func (OrganizationAccountType) Edges() []ent.Edge {
 			Field("organization_id").
 			Required().
 			Unique(),
+	}
+}
+
+// Indexes of the OrganizationAccountType.
+func (OrganizationAccountType) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("organization_id", "name").Unique(),
 	}
 }

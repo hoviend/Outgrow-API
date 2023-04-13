@@ -255,11 +255,7 @@ func HasUsers() predicate.Organization {
 // HasUsersWith applies the HasEdge predicate on the "users" edge with a given conditions (other predicates).
 func HasUsersWith(preds ...predicate.User) predicate.Organization {
 	return predicate.Organization(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(UsersInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, UsersTable, UsersPrimaryKey...),
-		)
+		step := newUsersStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -282,11 +278,7 @@ func HasAccountTypes() predicate.Organization {
 // HasAccountTypesWith applies the HasEdge predicate on the "accountTypes" edge with a given conditions (other predicates).
 func HasAccountTypesWith(preds ...predicate.OrganizationAccountType) predicate.Organization {
 	return predicate.Organization(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AccountTypesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AccountTypesTable, AccountTypesColumn),
-		)
+		step := newAccountTypesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -309,11 +301,7 @@ func HasEventTypes() predicate.Organization {
 // HasEventTypesWith applies the HasEdge predicate on the "eventTypes" edge with a given conditions (other predicates).
 func HasEventTypesWith(preds ...predicate.OrganizationEventType) predicate.Organization {
 	return predicate.Organization(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(EventTypesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, EventTypesTable, EventTypesColumn),
-		)
+		step := newEventTypesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -336,11 +324,7 @@ func HasEvents() predicate.Organization {
 // HasEventsWith applies the HasEdge predicate on the "events" edge with a given conditions (other predicates).
 func HasEventsWith(preds ...predicate.Event) predicate.Organization {
 	return predicate.Organization(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(EventsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, EventsTable, EventsColumn),
-		)
+		step := newEventsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

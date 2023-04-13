@@ -41,6 +41,14 @@ func (oac *OrganizationAccountCreate) SetCode(s string) *OrganizationAccountCrea
 	return oac
 }
 
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (oac *OrganizationAccountCreate) SetNillableCode(s *string) *OrganizationAccountCreate {
+	if s != nil {
+		oac.SetCode(*s)
+	}
+	return oac
+}
+
 // SetBalance sets the "balance" field.
 func (oac *OrganizationAccountCreate) SetBalance(f float64) *OrganizationAccountCreate {
 	oac.mutation.SetBalance(f)
@@ -158,14 +166,6 @@ func (oac *OrganizationAccountCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "OrganizationAccount.name": %w`, err)}
 		}
 	}
-	if _, ok := oac.mutation.Code(); !ok {
-		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "OrganizationAccount.code"`)}
-	}
-	if v, ok := oac.mutation.Code(); ok {
-		if err := organizationaccount.CodeValidator(v); err != nil {
-			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "OrganizationAccount.code": %w`, err)}
-		}
-	}
 	if _, ok := oac.mutation.Balance(); !ok {
 		return &ValidationError{Name: "balance", err: errors.New(`ent: missing required field "OrganizationAccount.balance"`)}
 	}
@@ -277,8 +277,8 @@ func (oacb *OrganizationAccountCreateBulk) Save(ctx context.Context) ([]*Organiz
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, oacb.builders[i+1].mutation)
 				} else {

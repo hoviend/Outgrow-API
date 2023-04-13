@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -25,7 +26,8 @@ type MasterEventType struct {
 	// Rules holds the value of the "rules" field.
 	Rules []schema.EventRules `json:"rules,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt    time.Time `json:"created_at,omitempty"`
+	selectValues sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -42,7 +44,7 @@ func (*MasterEventType) scanValues(columns []string) ([]any, error) {
 		case mastereventtype.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type MasterEventType", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -88,9 +90,17 @@ func (met *MasterEventType) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				met.CreatedAt = value.Time
 			}
+		default:
+			met.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the MasterEventType.
+// This includes values selected through modifiers, order, etc.
+func (met *MasterEventType) Value(name string) (ent.Value, error) {
+	return met.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this MasterEventType.

@@ -45,7 +45,10 @@ func (svc *AccountService) CheckOrganizationAccountCategory(ctx context.Context,
 	return ac != nil, nil
 }
 
-func (svc *AccountService) GetOrganizationAccountTypes(ctx context.Context, organizationID uuid.UUID, opt dto.GetOrganizationAccountTypesOption) ([]*ent.OrganizationAccountType, error) {
+func (svc *AccountService) GetOrganizationAccountTypes(ctx context.Context, organizationID uuid.UUID, opt dto.GetOrganizationAccountTypesOption) ([]*ent.OrganizationAccountType, dto.PaginateResponse, error) {
+	total := 0
+	pagination := dto.PaginateResponse{}
+
 	q := svc.entClient.OrganizationAccountType.Query().
 		Where(organizationaccounttype.OrganizationID(organizationID))
 
@@ -55,7 +58,22 @@ func (svc *AccountService) GetOrganizationAccountTypes(ctx context.Context, orga
 		})
 	}
 
-	return q.All(ctx)
+	total, err := q.Count(ctx)
+	if err != nil {
+		return nil, dto.PaginateResponse{}, err
+	}
+	if opt.Paginate != nil {
+		q = q.Offset(opt.Paginate.Offset()).
+			Limit(opt.Paginate.PerPage)
+	}
+	pagination = opt.Paginate.ToResponse(total)
+
+	accounts, err := q.All(ctx)
+	return accounts, pagination, err
+}
+
+func (svc *AccountService) GetOrganizationAccountByID(ctx context.Context, id int) (*ent.OrganizationAccount, error) {
+	return svc.entClient.OrganizationAccount.Get(ctx, id)
 }
 
 func (svc *AccountService) GetOrganizationAccounts(ctx context.Context, opt dto.GetOrganizationAccountsOption) ([]*ent.OrganizationAccount, dto.PaginateResponse, error) {
@@ -63,10 +81,19 @@ func (svc *AccountService) GetOrganizationAccounts(ctx context.Context, opt dto.
 	pagination := dto.PaginateResponse{}
 
 	q := svc.entClient.OrganizationAccount.Query().
-		WithAccCategory().
-		WithAccCategory(func(oacq *ent.OrganizationAccountCategoryQuery) {
+		WithAccCategory()
+
+	if opt.OrganizationID != uuid.Nil {
+		q = q.WithAccCategory(func(oacq *ent.OrganizationAccountCategoryQuery) {
+			oacq.WithType(func(oatq *ent.OrganizationAccountTypeQuery) {
+				oatq.Where(organizationaccounttype.OrganizationID(opt.OrganizationID))
+			})
+		})
+	} else {
+		q = q.WithAccCategory(func(oacq *ent.OrganizationAccountCategoryQuery) {
 			oacq.WithType()
 		})
+	}
 
 	if opt.AccountNameFilter != "" {
 		q = q.Where(organizationaccount.NameContainsFold(opt.AccountNameFilter))

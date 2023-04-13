@@ -255,11 +255,7 @@ func HasOrganizations() predicate.User {
 // HasOrganizationsWith applies the HasEdge predicate on the "organizations" edge with a given conditions (other predicates).
 func HasOrganizationsWith(preds ...predicate.Organization) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(OrganizationsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, OrganizationsTable, OrganizationsPrimaryKey...),
-		)
+		step := newOrganizationsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

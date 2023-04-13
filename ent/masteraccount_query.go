@@ -19,7 +19,7 @@ import (
 type MasterAccountQuery struct {
 	config
 	ctx             *QueryContext
-	order           []OrderFunc
+	order           []masteraccount.Order
 	inters          []Interceptor
 	predicates      []predicate.MasterAccount
 	withAccCategory *MasterAccountCategoryQuery
@@ -54,7 +54,7 @@ func (maq *MasterAccountQuery) Unique(unique bool) *MasterAccountQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (maq *MasterAccountQuery) Order(o ...OrderFunc) *MasterAccountQuery {
+func (maq *MasterAccountQuery) Order(o ...masteraccount.Order) *MasterAccountQuery {
 	maq.order = append(maq.order, o...)
 	return maq
 }
@@ -270,7 +270,7 @@ func (maq *MasterAccountQuery) Clone() *MasterAccountQuery {
 	return &MasterAccountQuery{
 		config:          maq.config,
 		ctx:             maq.ctx.Clone(),
-		order:           append([]OrderFunc{}, maq.order...),
+		order:           append([]masteraccount.Order{}, maq.order...),
 		inters:          append([]Interceptor{}, maq.inters...),
 		predicates:      append([]predicate.MasterAccount{}, maq.predicates...),
 		withAccCategory: maq.withAccCategory.Clone(),
@@ -454,6 +454,9 @@ func (maq *MasterAccountQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != masteraccount.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if maq.withAccCategory != nil {
+			_spec.Node.AddColumnOnce(masteraccount.FieldCategoryID)
 		}
 	}
 	if ps := maq.predicates; len(ps) > 0 {

@@ -65,7 +65,7 @@ func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) GetUserOrganizations(c *fiber.Ctx) error {
-	var query dto.PaginateParam
+	var query dto.GetUserOrganizationsParam
 
 	user, err := h.getUserFromURL(c)
 	if err != nil {
@@ -74,9 +74,11 @@ func (h *UserHandler) GetUserOrganizations(c *fiber.Ctx) error {
 
 	query.Page = c.QueryInt("page")
 	query.PerPage = c.QueryInt("per_page")
+	query.OrganizationName = c.Query("organization_name")
 
 	opt := dto.GetUserOrganizationsOption{
-		Paginate: &query,
+		Paginate:               &query.PaginateParam,
+		OrganizationNameFilter: query.OrganizationName,
 	}
 	organizations, paginate, err := h.UserService.GetUserOrganizations(
 		c.UserContext(),
@@ -126,13 +128,13 @@ func (h *UserHandler) CreateOrganizationByUser(c *fiber.Ctx) error {
 		return err
 	}
 
-	org, err := h.UserService.CreateOrganizationByUser(ctx, payload.OrganizationName, user)
+	// check masters data
+	masterEventTypes, masterAccountTypes, err := h.MasterService.GetMasterEventAndAccountData(ctx)
 	if err != nil {
 		return err
 	}
 
-	// check masters data
-	masterEventTypes, masterAccountTypes, err := h.MasterService.GetMasterEventAndAccountData(ctx)
+	org, err := h.UserService.CreateOrganizationByUser(ctx, payload.OrganizationName, user)
 	if err != nil {
 		return err
 	}
@@ -152,7 +154,7 @@ func (h *UserHandler) CreateOrganizationByUser(c *fiber.Ctx) error {
 
 	resp := dto.SuccessResponse{
 		Message: "organization successfully created",
-		Data:    dto.UserCreateOrganizationResponse{OrganizationID: org.ID},
+		Data:    dto.DefaultCreateUUIDResponse{ID: org.ID},
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(resp)
@@ -180,7 +182,7 @@ func (h *UserHandler) UserJoinOrganization(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = h.OrganizationService.JoinOrganization(
+	organization, err := h.OrganizationService.JoinOrganization(
 		c.UserContext(),
 		payload.PublicID,
 		user,
@@ -191,6 +193,9 @@ func (h *UserHandler) UserJoinOrganization(c *fiber.Ctx) error {
 
 	resp := dto.SuccessResponse{
 		Message: "successfully join the organization",
+		Data: dto.DefaultCreateUUIDResponse{
+			ID: organization.ID,
+		},
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(resp)

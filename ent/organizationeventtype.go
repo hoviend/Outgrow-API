@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
@@ -32,7 +33,8 @@ type OrganizationEventType struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OrganizationEventTypeQuery when eager-loading is set.
-	Edges OrganizationEventTypeEdges `json:"edges"`
+	Edges        OrganizationEventTypeEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // OrganizationEventTypeEdges holds the relations/edges for other nodes in the graph.
@@ -84,7 +86,7 @@ func (*OrganizationEventType) scanValues(columns []string) ([]any, error) {
 		case organizationeventtype.FieldOrganizationID:
 			values[i] = new(uuid.UUID)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type OrganizationEventType", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -136,9 +138,17 @@ func (oet *OrganizationEventType) assignValues(columns []string, values []any) e
 			} else if value.Valid {
 				oet.CreatedAt = value.Time
 			}
+		default:
+			oet.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the OrganizationEventType.
+// This includes values selected through modifiers, order, etc.
+func (oet *OrganizationEventType) Value(name string) (ent.Value, error) {
+	return oet.selectValues.Get(name)
 }
 
 // QueryEvents queries the "events" edge of the OrganizationEventType entity.

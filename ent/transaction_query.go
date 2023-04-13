@@ -21,7 +21,7 @@ import (
 type TransactionQuery struct {
 	config
 	ctx         *QueryContext
-	order       []OrderFunc
+	order       []transaction.Order
 	inters      []Interceptor
 	predicates  []predicate.Transaction
 	withAccount *OrganizationAccountQuery
@@ -57,7 +57,7 @@ func (tq *TransactionQuery) Unique(unique bool) *TransactionQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (tq *TransactionQuery) Order(o ...OrderFunc) *TransactionQuery {
+func (tq *TransactionQuery) Order(o ...transaction.Order) *TransactionQuery {
 	tq.order = append(tq.order, o...)
 	return tq
 }
@@ -295,7 +295,7 @@ func (tq *TransactionQuery) Clone() *TransactionQuery {
 	return &TransactionQuery{
 		config:      tq.config,
 		ctx:         tq.ctx.Clone(),
-		order:       append([]OrderFunc{}, tq.order...),
+		order:       append([]transaction.Order{}, tq.order...),
 		inters:      append([]Interceptor{}, tq.inters...),
 		predicates:  append([]predicate.Transaction{}, tq.predicates...),
 		withAccount: tq.withAccount.Clone(),
@@ -527,6 +527,12 @@ func (tq *TransactionQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != transaction.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if tq.withAccount != nil {
+			_spec.Node.AddColumnOnce(transaction.FieldAccountID)
+		}
+		if tq.withEvent != nil {
+			_spec.Node.AddColumnOnce(transaction.FieldEventID)
 		}
 	}
 	if ps := tq.predicates; len(ps) > 0 {

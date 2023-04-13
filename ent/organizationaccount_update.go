@@ -48,6 +48,20 @@ func (oau *OrganizationAccountUpdate) SetCode(s string) *OrganizationAccountUpda
 	return oau
 }
 
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (oau *OrganizationAccountUpdate) SetNillableCode(s *string) *OrganizationAccountUpdate {
+	if s != nil {
+		oau.SetCode(*s)
+	}
+	return oau
+}
+
+// ClearCode clears the value of the "code" field.
+func (oau *OrganizationAccountUpdate) ClearCode() *OrganizationAccountUpdate {
+	oau.mutation.ClearCode()
+	return oau
+}
+
 // SetBalance sets the "balance" field.
 func (oau *OrganizationAccountUpdate) SetBalance(f float64) *OrganizationAccountUpdate {
 	oau.mutation.ResetBalance()
@@ -166,11 +180,6 @@ func (oau *OrganizationAccountUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "OrganizationAccount.name": %w`, err)}
 		}
 	}
-	if v, ok := oau.mutation.Code(); ok {
-		if err := organizationaccount.CodeValidator(v); err != nil {
-			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "OrganizationAccount.code": %w`, err)}
-		}
-	}
 	if _, ok := oau.mutation.AccCategoryID(); oau.mutation.AccCategoryCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "OrganizationAccount.accCategory"`)
 	}
@@ -194,6 +203,9 @@ func (oau *OrganizationAccountUpdate) sqlSave(ctx context.Context) (n int, err e
 	}
 	if value, ok := oau.mutation.Code(); ok {
 		_spec.SetField(organizationaccount.FieldCode, field.TypeString, value)
+	}
+	if oau.mutation.CodeCleared() {
+		_spec.ClearField(organizationaccount.FieldCode, field.TypeString)
 	}
 	if value, ok := oau.mutation.Balance(); ok {
 		_spec.SetField(organizationaccount.FieldBalance, field.TypeFloat64, value)
@@ -310,6 +322,20 @@ func (oauo *OrganizationAccountUpdateOne) SetName(s string) *OrganizationAccount
 // SetCode sets the "code" field.
 func (oauo *OrganizationAccountUpdateOne) SetCode(s string) *OrganizationAccountUpdateOne {
 	oauo.mutation.SetCode(s)
+	return oauo
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (oauo *OrganizationAccountUpdateOne) SetNillableCode(s *string) *OrganizationAccountUpdateOne {
+	if s != nil {
+		oauo.SetCode(*s)
+	}
+	return oauo
+}
+
+// ClearCode clears the value of the "code" field.
+func (oauo *OrganizationAccountUpdateOne) ClearCode() *OrganizationAccountUpdateOne {
+	oauo.mutation.ClearCode()
 	return oauo
 }
 
@@ -444,11 +470,6 @@ func (oauo *OrganizationAccountUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "OrganizationAccount.name": %w`, err)}
 		}
 	}
-	if v, ok := oauo.mutation.Code(); ok {
-		if err := organizationaccount.CodeValidator(v); err != nil {
-			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "OrganizationAccount.code": %w`, err)}
-		}
-	}
 	if _, ok := oauo.mutation.AccCategoryID(); oauo.mutation.AccCategoryCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "OrganizationAccount.accCategory"`)
 	}
@@ -489,6 +510,9 @@ func (oauo *OrganizationAccountUpdateOne) sqlSave(ctx context.Context) (_node *O
 	}
 	if value, ok := oauo.mutation.Code(); ok {
 		_spec.SetField(organizationaccount.FieldCode, field.TypeString, value)
+	}
+	if oauo.mutation.CodeCleared() {
+		_spec.ClearField(organizationaccount.FieldCode, field.TypeString)
 	}
 	if value, ok := oauo.mutation.Balance(); ok {
 		_spec.SetField(organizationaccount.FieldBalance, field.TypeFloat64, value)

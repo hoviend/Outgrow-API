@@ -58,6 +58,10 @@ func (svc *UserService) GetUserOrganizations(ctx context.Context, id uuid.UUID, 
 		Where(user.ID(id)).
 		QueryOrganizations()
 
+	if opt.OrganizationNameFilter != "" {
+		q = q.Where(organization.NameContainsFold(opt.OrganizationNameFilter))
+	}
+
 	total, err := q.Count(ctx)
 	if err != nil {
 		return nil, dto.PaginateResponse{}, err

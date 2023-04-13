@@ -21,7 +21,7 @@ import (
 type OrganizationAccountCategoryQuery struct {
 	config
 	ctx          *QueryContext
-	order        []OrderFunc
+	order        []organizationaccountcategory.Order
 	inters       []Interceptor
 	predicates   []predicate.OrganizationAccountCategory
 	withAccounts *OrganizationAccountQuery
@@ -57,7 +57,7 @@ func (oacq *OrganizationAccountCategoryQuery) Unique(unique bool) *OrganizationA
 }
 
 // Order specifies how the records should be ordered.
-func (oacq *OrganizationAccountCategoryQuery) Order(o ...OrderFunc) *OrganizationAccountCategoryQuery {
+func (oacq *OrganizationAccountCategoryQuery) Order(o ...organizationaccountcategory.Order) *OrganizationAccountCategoryQuery {
 	oacq.order = append(oacq.order, o...)
 	return oacq
 }
@@ -295,7 +295,7 @@ func (oacq *OrganizationAccountCategoryQuery) Clone() *OrganizationAccountCatego
 	return &OrganizationAccountCategoryQuery{
 		config:       oacq.config,
 		ctx:          oacq.ctx.Clone(),
-		order:        append([]OrderFunc{}, oacq.order...),
+		order:        append([]organizationaccountcategory.Order{}, oacq.order...),
 		inters:       append([]Interceptor{}, oacq.inters...),
 		predicates:   append([]predicate.OrganizationAccountCategory{}, oacq.predicates...),
 		withAccounts: oacq.withAccounts.Clone(),
@@ -528,6 +528,9 @@ func (oacq *OrganizationAccountCategoryQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != organizationaccountcategory.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if oacq.withType != nil {
+			_spec.Node.AddColumnOnce(organizationaccountcategory.FieldAccountTypeID)
 		}
 	}
 	if ps := oacq.predicates; len(ps) > 0 {

@@ -22,7 +22,7 @@ import (
 type OrganizationEventTypeQuery struct {
 	config
 	ctx              *QueryContext
-	order            []OrderFunc
+	order            []organizationeventtype.Order
 	inters           []Interceptor
 	predicates       []predicate.OrganizationEventType
 	withEvents       *EventQuery
@@ -58,7 +58,7 @@ func (oetq *OrganizationEventTypeQuery) Unique(unique bool) *OrganizationEventTy
 }
 
 // Order specifies how the records should be ordered.
-func (oetq *OrganizationEventTypeQuery) Order(o ...OrderFunc) *OrganizationEventTypeQuery {
+func (oetq *OrganizationEventTypeQuery) Order(o ...organizationeventtype.Order) *OrganizationEventTypeQuery {
 	oetq.order = append(oetq.order, o...)
 	return oetq
 }
@@ -296,7 +296,7 @@ func (oetq *OrganizationEventTypeQuery) Clone() *OrganizationEventTypeQuery {
 	return &OrganizationEventTypeQuery{
 		config:           oetq.config,
 		ctx:              oetq.ctx.Clone(),
-		order:            append([]OrderFunc{}, oetq.order...),
+		order:            append([]organizationeventtype.Order{}, oetq.order...),
 		inters:           append([]Interceptor{}, oetq.inters...),
 		predicates:       append([]predicate.OrganizationEventType{}, oetq.predicates...),
 		withEvents:       oetq.withEvents.Clone(),
@@ -527,6 +527,9 @@ func (oetq *OrganizationEventTypeQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != organizationeventtype.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if oetq.withOrganization != nil {
+			_spec.Node.AddColumnOnce(organizationeventtype.FieldOrganizationID)
 		}
 	}
 	if ps := oetq.predicates; len(ps) > 0 {

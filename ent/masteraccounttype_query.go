@@ -20,7 +20,7 @@ import (
 type MasterAccountTypeQuery struct {
 	config
 	ctx            *QueryContext
-	order          []OrderFunc
+	order          []masteraccounttype.Order
 	inters         []Interceptor
 	predicates     []predicate.MasterAccountType
 	withCategories *MasterAccountCategoryQuery
@@ -55,7 +55,7 @@ func (matq *MasterAccountTypeQuery) Unique(unique bool) *MasterAccountTypeQuery 
 }
 
 // Order specifies how the records should be ordered.
-func (matq *MasterAccountTypeQuery) Order(o ...OrderFunc) *MasterAccountTypeQuery {
+func (matq *MasterAccountTypeQuery) Order(o ...masteraccounttype.Order) *MasterAccountTypeQuery {
 	matq.order = append(matq.order, o...)
 	return matq
 }
@@ -271,7 +271,7 @@ func (matq *MasterAccountTypeQuery) Clone() *MasterAccountTypeQuery {
 	return &MasterAccountTypeQuery{
 		config:         matq.config,
 		ctx:            matq.ctx.Clone(),
-		order:          append([]OrderFunc{}, matq.order...),
+		order:          append([]masteraccounttype.Order{}, matq.order...),
 		inters:         append([]Interceptor{}, matq.inters...),
 		predicates:     append([]predicate.MasterAccountType{}, matq.predicates...),
 		withCategories: matq.withCategories.Clone(),

@@ -23,7 +23,7 @@ import (
 type EventQuery struct {
 	config
 	ctx              *QueryContext
-	order            []OrderFunc
+	order            []event.Order
 	inters           []Interceptor
 	predicates       []predicate.Event
 	withTransactions *TransactionQuery
@@ -60,7 +60,7 @@ func (eq *EventQuery) Unique(unique bool) *EventQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (eq *EventQuery) Order(o ...OrderFunc) *EventQuery {
+func (eq *EventQuery) Order(o ...event.Order) *EventQuery {
 	eq.order = append(eq.order, o...)
 	return eq
 }
@@ -320,7 +320,7 @@ func (eq *EventQuery) Clone() *EventQuery {
 	return &EventQuery{
 		config:           eq.config,
 		ctx:              eq.ctx.Clone(),
-		order:            append([]OrderFunc{}, eq.order...),
+		order:            append([]event.Order{}, eq.order...),
 		inters:           append([]Interceptor{}, eq.inters...),
 		predicates:       append([]predicate.Event{}, eq.predicates...),
 		withTransactions: eq.withTransactions.Clone(),
@@ -599,6 +599,12 @@ func (eq *EventQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != event.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if eq.withType != nil {
+			_spec.Node.AddColumnOnce(event.FieldEventTypeID)
+		}
+		if eq.withOrganization != nil {
+			_spec.Node.AddColumnOnce(event.FieldOrganizationID)
 		}
 	}
 	if ps := eq.predicates; len(ps) > 0 {

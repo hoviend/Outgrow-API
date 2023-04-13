@@ -289,11 +289,7 @@ func HasAccounts() predicate.OrganizationAccountCategory {
 // HasAccountsWith applies the HasEdge predicate on the "accounts" edge with a given conditions (other predicates).
 func HasAccountsWith(preds ...predicate.OrganizationAccount) predicate.OrganizationAccountCategory {
 	return predicate.OrganizationAccountCategory(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AccountsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AccountsTable, AccountsColumn),
-		)
+		step := newAccountsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -316,11 +312,7 @@ func HasType() predicate.OrganizationAccountCategory {
 // HasTypeWith applies the HasEdge predicate on the "type" edge with a given conditions (other predicates).
 func HasTypeWith(preds ...predicate.OrganizationAccountType) predicate.OrganizationAccountCategory {
 	return predicate.OrganizationAccountCategory(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TypeInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, TypeTable, TypeColumn),
-		)
+		step := newTypeStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

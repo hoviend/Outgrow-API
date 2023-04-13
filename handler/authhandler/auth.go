@@ -34,7 +34,6 @@ func GetUserInfoFromContext(c *fiber.Ctx) (*dto.UserInfoFromIDToken, error) {
 }
 
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
-	var payload dto.AuthLoginPayload
 	ctx := c.UserContext()
 
 	userInfo, err := GetUserInfoFromContext(c)
@@ -65,8 +64,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	resp := dto.SuccessResponse{
 		Message: "success",
 		Data: dto.AuthLoginResponse{
-			AccessToken: payload.IDToken,
-			UserID:      u.ID,
+			UserID: u.ID,
 		},
 	}
 

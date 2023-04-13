@@ -19,7 +19,7 @@ func (OrganizationAccount) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("category_id").Positive(),
 		field.String("name").NotEmpty(),
-		field.String("code").NotEmpty().Unique(),
+		field.String("code").Optional().Unique(),
 		field.Float("balance").Default(0),
 		field.Time("created_at").Default(time.Now).Annotations(entsql.Default("CURRENT_TIMESTAMP")).Immutable(),
 	}

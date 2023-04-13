@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -27,7 +28,8 @@ type OrganizationAccountCategory struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OrganizationAccountCategoryQuery when eager-loading is set.
-	Edges OrganizationAccountCategoryEdges `json:"edges"`
+	Edges        OrganizationAccountCategoryEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // OrganizationAccountCategoryEdges holds the relations/edges for other nodes in the graph.
@@ -75,7 +77,7 @@ func (*OrganizationAccountCategory) scanValues(columns []string) ([]any, error) 
 		case organizationaccountcategory.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type OrganizationAccountCategory", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -119,9 +121,17 @@ func (oac *OrganizationAccountCategory) assignValues(columns []string, values []
 			} else if value.Valid {
 				oac.CreatedAt = value.Time
 			}
+		default:
+			oac.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the OrganizationAccountCategory.
+// This includes values selected through modifiers, order, etc.
+func (oac *OrganizationAccountCategory) Value(name string) (ent.Value, error) {
+	return oac.selectValues.Get(name)
 }
 
 // QueryAccounts queries the "accounts" edge of the OrganizationAccountCategory entity.

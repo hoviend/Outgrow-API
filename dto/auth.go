@@ -7,8 +7,7 @@ type AuthLoginPayload struct {
 }
 
 type AuthLoginResponse struct {
-	AccessToken string    `json:"access_token"`
-	UserID      uuid.UUID `json:"user_id"`
+	UserID uuid.UUID `json:"user_id"`
 }
 
 type UserInfoFromIDToken struct {

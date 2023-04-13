@@ -123,7 +123,7 @@ var (
 	OrganizationAccountsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "code", Type: field.TypeString, Unique: true},
+		{Name: "code", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "balance", Type: field.TypeFloat64, Default: 0},
 		{Name: "created_at", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
 		{Name: "category_id", Type: field.TypeInt},
@@ -167,7 +167,7 @@ var (
 	// OrganizationAccountTypesColumns holds the columns for the "organization_account_types" table.
 	OrganizationAccountTypesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
 		{Name: "organization_id", Type: field.TypeUUID},
 	}
@@ -184,11 +184,18 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "organizationaccounttype_organization_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{OrganizationAccountTypesColumns[3], OrganizationAccountTypesColumns[1]},
+			},
+		},
 	}
 	// OrganizationEventTypesColumns holds the columns for the "organization_event_types" table.
 	OrganizationEventTypesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
 		{Name: "rules", Type: field.TypeJSON},
 		{Name: "created_at", Type: field.TypeTime, Default: "CURRENT_TIMESTAMP"},
@@ -205,6 +212,13 @@ var (
 				Columns:    []*schema.Column{OrganizationEventTypesColumns[5]},
 				RefColumns: []*schema.Column{OrganizationsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "organizationeventtype_organization_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{OrganizationEventTypesColumns[5], OrganizationEventTypesColumns[1]},
 			},
 		},
 	}

@@ -36,6 +36,15 @@ func (svc *TransactionService) GetTransactions(ctx context.Context, opt dto.GetT
 		)
 	}
 
+	if opt.JoinAccount {
+		q = q.WithAccount()
+	}
+
+	if opt.JoinEvent {
+		q = q.WithEvent().
+			WithEvent(func(eq *ent.EventQuery) { eq.WithType() })
+	}
+
 	total, err := q.Count(ctx)
 	if err != nil {
 		return nil, dto.PaginateResponse{}, err
@@ -50,4 +59,21 @@ func (svc *TransactionService) GetTransactions(ctx context.Context, opt dto.GetT
 
 	trxs, err := q.All(ctx)
 	return trxs, pagination, err
+}
+
+func (svc *TransactionService) CreateTransactions(ctx context.Context, transactions []*ent.Transaction) error {
+
+	tcs := make([]*ent.TransactionCreate, 0)
+	for _, trx := range transactions {
+		t := svc.entClient.Transaction.Create().
+			SetAccountID(trx.AccountID).
+			SetAmount(trx.Amount).
+			SetTransactionDate(trx.TransactionDate).
+			SetTransactionType(trx.TransactionType).
+			SetEventID(trx.EventID).
+			SetNotes(trx.Notes)
+
+		tcs = append(tcs, t)
+	}
+	return svc.entClient.Transaction.CreateBulk(tcs...).Exec(ctx)
 }

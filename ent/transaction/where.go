@@ -366,11 +366,7 @@ func HasAccount() predicate.Transaction {
 // HasAccountWith applies the HasEdge predicate on the "account" edge with a given conditions (other predicates).
 func HasAccountWith(preds ...predicate.OrganizationAccount) predicate.Transaction {
 	return predicate.Transaction(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AccountInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, AccountTable, AccountColumn),
-		)
+		step := newAccountStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -393,11 +389,7 @@ func HasEvent() predicate.Transaction {
 // HasEventWith applies the HasEdge predicate on the "event" edge with a given conditions (other predicates).
 func HasEventWith(preds ...predicate.Event) predicate.Transaction {
 	return predicate.Transaction(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(EventInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, EventTable, EventColumn),
-		)
+		step := newEventStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

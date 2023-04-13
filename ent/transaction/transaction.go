@@ -7,6 +7,8 @@ import (
 	"outgrow/enum"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -90,4 +92,75 @@ func TransactionTypeValidator(tt enum.TransactionType) error {
 	default:
 		return fmt.Errorf("transaction: invalid enum value for transaction_type field: %q", tt)
 	}
+}
+
+// Order defines the ordering method for the Transaction queries.
+type Order func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) Order {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByEventID orders the results by the event_id field.
+func ByEventID(opts ...sql.OrderTermOption) Order {
+	return sql.OrderByField(FieldEventID, opts...).ToFunc()
+}
+
+// ByTransactionDate orders the results by the transaction_date field.
+func ByTransactionDate(opts ...sql.OrderTermOption) Order {
+	return sql.OrderByField(FieldTransactionDate, opts...).ToFunc()
+}
+
+// ByTransactionType orders the results by the transaction_type field.
+func ByTransactionType(opts ...sql.OrderTermOption) Order {
+	return sql.OrderByField(FieldTransactionType, opts...).ToFunc()
+}
+
+// ByAccountID orders the results by the account_id field.
+func ByAccountID(opts ...sql.OrderTermOption) Order {
+	return sql.OrderByField(FieldAccountID, opts...).ToFunc()
+}
+
+// ByAmount orders the results by the amount field.
+func ByAmount(opts ...sql.OrderTermOption) Order {
+	return sql.OrderByField(FieldAmount, opts...).ToFunc()
+}
+
+// ByNotes orders the results by the notes field.
+func ByNotes(opts ...sql.OrderTermOption) Order {
+	return sql.OrderByField(FieldNotes, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) Order {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByAccountField orders the results by account field.
+func ByAccountField(field string, opts ...sql.OrderTermOption) Order {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAccountStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByEventField orders the results by event field.
+func ByEventField(field string, opts ...sql.OrderTermOption) Order {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEventStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newAccountStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AccountInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, AccountTable, AccountColumn),
+	)
+}
+func newEventStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EventInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, EventTable, EventColumn),
+	)
 }

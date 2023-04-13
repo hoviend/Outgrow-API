@@ -18,7 +18,7 @@ import (
 type MasterEventTypeQuery struct {
 	config
 	ctx        *QueryContext
-	order      []OrderFunc
+	order      []mastereventtype.Order
 	inters     []Interceptor
 	predicates []predicate.MasterEventType
 	// intermediate query (i.e. traversal path).
@@ -52,7 +52,7 @@ func (metq *MasterEventTypeQuery) Unique(unique bool) *MasterEventTypeQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (metq *MasterEventTypeQuery) Order(o ...OrderFunc) *MasterEventTypeQuery {
+func (metq *MasterEventTypeQuery) Order(o ...mastereventtype.Order) *MasterEventTypeQuery {
 	metq.order = append(metq.order, o...)
 	return metq
 }
@@ -246,7 +246,7 @@ func (metq *MasterEventTypeQuery) Clone() *MasterEventTypeQuery {
 	return &MasterEventTypeQuery{
 		config:     metq.config,
 		ctx:        metq.ctx.Clone(),
-		order:      append([]OrderFunc{}, metq.order...),
+		order:      append([]mastereventtype.Order{}, metq.order...),
 		inters:     append([]Interceptor{}, metq.inters...),
 		predicates: append([]predicate.MasterEventType{}, metq.predicates...),
 		// clone intermediate query.

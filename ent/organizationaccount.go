@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -29,7 +30,8 @@ type OrganizationAccount struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OrganizationAccountQuery when eager-loading is set.
-	Edges OrganizationAccountEdges `json:"edges"`
+	Edges        OrganizationAccountEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // OrganizationAccountEdges holds the relations/edges for other nodes in the graph.
@@ -79,7 +81,7 @@ func (*OrganizationAccount) scanValues(columns []string) ([]any, error) {
 		case organizationaccount.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type OrganizationAccount", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -129,9 +131,17 @@ func (oa *OrganizationAccount) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				oa.CreatedAt = value.Time
 			}
+		default:
+			oa.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the OrganizationAccount.
+// This includes values selected through modifiers, order, etc.
+func (oa *OrganizationAccount) Value(name string) (ent.Value, error) {
+	return oa.selectValues.Get(name)
 }
 
 // QueryTransactions queries the "transactions" edge of the OrganizationAccount entity.

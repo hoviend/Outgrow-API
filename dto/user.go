@@ -18,12 +18,13 @@ type GetUserResponse struct {
 
 type GetUserOrganizationsParam struct {
 	PaginateParam
-	OrganizationID string
+	OrganizationName string `json:"organization_name"`
 }
 
 type GetUserOrganizationsResponse struct {
-	Name     string `json:"name"`
-	PublicID string `json:"public_id"`
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	PublicID string    `json:"public_id"`
 }
 
 type UserCreateOrganizationPayload struct {
@@ -35,7 +36,8 @@ type UserCreateOrganizationResponse struct {
 }
 
 type GetUserOrganizationsOption struct {
-	Paginate *PaginateParam
+	Paginate               *PaginateParam
+	OrganizationNameFilter string
 }
 
 type UserJoinOrganizationPayload struct {
@@ -43,6 +45,7 @@ type UserJoinOrganizationPayload struct {
 }
 
 func (r *GetUserOrganizationsResponse) BuildResponse(o *ent.Organization) {
+	r.ID = o.ID
 	r.Name = o.Name
 	r.PublicID = o.PublicID
 }

@@ -13,9 +13,14 @@ type CreateOrganizationAccountPayload struct {
 	Code              string  `json:"code" validate:"required"`
 }
 
-type GetAccountSelectionResponse struct {
+type GetParentAccountSelectionResponse struct {
 	AccountType DefaultAccountResponse   `json:"account_type"`
 	Categories  []DefaultAccountResponse `json:"categories"`
+}
+
+type GetAccountSelectionResponse struct {
+	DefaultAccountResponse
+	Code string `json:"code"`
 }
 
 type DefaultAccountResponse struct {
@@ -23,7 +28,7 @@ type DefaultAccountResponse struct {
 	Name string `json:"name"`
 }
 
-type GetChartofAccountsParam struct {
+type GetAccountsParam struct {
 	PaginateParam
 	Name string `json:"name,omitempty"`
 }
@@ -35,6 +40,7 @@ type GetOrganizationAccountsOption struct {
 }
 
 type GetOrganizationAccountTypesOption struct {
+	Paginate                  *PaginateParam
 	WithCategoriesAndAccounts bool
 }
 

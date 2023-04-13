@@ -111,10 +111,6 @@ func init() {
 	organizationaccountDescName := organizationaccountFields[1].Descriptor()
 	// organizationaccount.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	organizationaccount.NameValidator = organizationaccountDescName.Validators[0].(func(string) error)
-	// organizationaccountDescCode is the schema descriptor for code field.
-	organizationaccountDescCode := organizationaccountFields[2].Descriptor()
-	// organizationaccount.CodeValidator is a validator for the "code" field. It is called by the builders before save.
-	organizationaccount.CodeValidator = organizationaccountDescCode.Validators[0].(func(string) error)
 	// organizationaccountDescBalance is the schema descriptor for balance field.
 	organizationaccountDescBalance := organizationaccountFields[3].Descriptor()
 	// organizationaccount.DefaultBalance holds the default value on creation for the balance field.
