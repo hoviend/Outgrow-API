@@ -69,8 +69,9 @@ func (svc *UserService) GetUserOrganizations(ctx context.Context, id uuid.UUID, 
 	if opt.Paginate != nil {
 		q = q.Offset(opt.Paginate.Offset()).
 			Limit(opt.Paginate.PerPage)
+
+		pagination = opt.Paginate.ToResponse(total)
 	}
-	pagination = opt.Paginate.ToResponse(total)
 
 	q = q.Order(ent.Desc(organization.FieldCreatedAt))
 

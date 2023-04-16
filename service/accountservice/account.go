@@ -8,6 +8,7 @@ import (
 	"outgrow/ent/organizationaccount"
 	"outgrow/ent/organizationaccountcategory"
 	"outgrow/ent/organizationaccounttype"
+	"outgrow/enum"
 
 	"github.com/google/uuid"
 )
@@ -70,8 +71,9 @@ func (svc *AccountService) GetAccountCategories(ctx context.Context, opt dto.Get
 	if opt.Paginate != nil {
 		q = q.Offset(opt.Paginate.Offset()).
 			Limit(opt.Paginate.PerPage)
+
+		pagination = opt.Paginate.ToResponse(total)
 	}
-	pagination = opt.Paginate.ToResponse(total)
 
 	q = q.Order(ent.Asc(organizationaccountcategory.FieldID))
 
@@ -99,34 +101,55 @@ func (svc *AccountService) GetOrganizationAccountTypes(ctx context.Context, orga
 	if opt.Paginate != nil {
 		q = q.Offset(opt.Paginate.Offset()).
 			Limit(opt.Paginate.PerPage)
+
+		pagination = opt.Paginate.ToResponse(total)
 	}
-	pagination = opt.Paginate.ToResponse(total)
 
 	accounts, err := q.All(ctx)
 	return accounts, pagination, err
 }
 
-func (svc *AccountService) GetOrganizationAccountByID(ctx context.Context, id int) (*ent.OrganizationAccount, error) {
-	return svc.entClient.OrganizationAccount.Get(ctx, id)
+func (svc *AccountService) GetOrganizationAccountByID(ctx context.Context, id int, withParent bool) (*ent.OrganizationAccount, error) {
+	if !withParent {
+		return svc.entClient.OrganizationAccount.Get(ctx, id)
+	}
+
+	return svc.entClient.OrganizationAccount.Query().
+		Where(organizationaccount.ID(id)).
+		WithAccCategory(func(oacq *ent.OrganizationAccountCategoryQuery) { oacq.WithType() }).
+		Only(ctx)
 }
 
 func (svc *AccountService) GetOrganizationAccounts(ctx context.Context, opt dto.GetOrganizationAccountsOption) ([]*ent.OrganizationAccount, dto.PaginateResponse, error) {
 	total := 0
 	pagination := dto.PaginateResponse{}
 
-	q := svc.entClient.OrganizationAccount.Query().
-		WithAccCategory()
+	q := svc.entClient.OrganizationAccount.Query()
 
 	if opt.OrganizationID != uuid.Nil {
-		q = q.WithAccCategory(func(oacq *ent.OrganizationAccountCategoryQuery) {
-			oacq.WithType(func(oatq *ent.OrganizationAccountTypeQuery) {
-				oatq.Where(organizationaccounttype.OrganizationID(opt.OrganizationID))
-			})
-		})
-	} else {
-		q = q.WithAccCategory(func(oacq *ent.OrganizationAccountCategoryQuery) {
-			oacq.WithType()
-		})
+		q = q.Where(
+			organizationaccount.HasAccCategoryWith(
+				organizationaccountcategory.HasTypeWith(
+					organizationaccounttype.OrganizationID(opt.OrganizationID),
+				),
+			),
+		)
+		// q = q.WithAccCategory().
+		// 	WithAccCategory(func(oacq *ent.OrganizationAccountCategoryQuery) {
+		// 		oacq.WithType(func(oatq *ent.OrganizationAccountTypeQuery) {
+		// 			oatq.Where(organizationaccounttype.OrganizationID(opt.OrganizationID))
+		// 		})
+		// 	})
+	}
+	// } else {
+	// 	q = q.WithAccCategory().
+	// 		WithAccCategory(func(oacq *ent.OrganizationAccountCategoryQuery) {
+	// 			oacq.WithType()
+	// 		})
+	// }
+
+	if opt.CategoryID != 0 {
+		q = q.Where(organizationaccount.CategoryID(opt.CategoryID))
 	}
 
 	if opt.AccountNameFilter != "" {
@@ -142,9 +165,23 @@ func (svc *AccountService) GetOrganizationAccounts(ctx context.Context, opt dto.
 	if opt.Paginate != nil {
 		q = q.Offset(opt.Paginate.Offset()).
 			Limit(opt.Paginate.PerPage)
+
+		pagination = opt.Paginate.ToResponse(total)
 	}
-	pagination = opt.Paginate.ToResponse(total)
+
+	q = q.WithAccCategory(func(oacq *ent.OrganizationAccountCategoryQuery) { oacq.WithType() })
 
 	accounts, err := q.All(ctx)
 	return accounts, pagination, err
+}
+
+func (svc *AccountService) UpdateBalance(ctx context.Context, param dto.UpdateBalanceParam) error {
+	updatedBalanceAmount := param.Account.Balance
+	if param.TransactionType == enum.TransactionTypeDebit {
+		updatedBalanceAmount -= param.Amount
+	} else {
+		updatedBalanceAmount += param.Amount
+	}
+
+	return param.Account.Update().SetBalance(updatedBalanceAmount).Exec(ctx)
 }

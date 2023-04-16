@@ -61,7 +61,7 @@ func (h *EventHandler) GenerateEventSimulations(c *fiber.Ctx) error {
 
 	respData := []dto.EventSimulationResponse{}
 	for _, er := range eventType.Rules {
-		account, err := h.AccountService.GetOrganizationAccountByID(ctx, er.AccountID)
+		account, err := h.AccountService.GetOrganizationAccountByID(ctx, er.AccountID, false)
 		if err != nil {
 			return err
 		}

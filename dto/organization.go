@@ -18,6 +18,11 @@ type GetOrganizationOption struct {
 	WithEvents bool
 }
 
+type GetOrganizationTransactionsParam struct {
+	PaginateParam
+	SearchAccountID int `json:"account_id"`
+}
+
 type GetOrganizationTransactionResponse struct {
 	ID              uuid.UUID            `json:"id"`
 	EventID         uuid.UUID            `json:"event_id"`

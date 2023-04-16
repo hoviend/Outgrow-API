@@ -1,9 +1,9 @@
 # Outgrow-API
 outgrow project backend service
 
-### Pre-Commit
+<!-- ### Pre-Commit
 
-Please install `pre-commit` to conform code standard.
+Please install `pre-commit` to conform code standard. -->
 
 ### Local Run
 
@@ -20,5 +20,5 @@ Update the `Config` struct on `/config/config.go` to read config from env variab
 ### Routing
 
 The app will listen on port `PORT` (from `config.Config.Port`). Then
-the request path will be routed by [gorilla/mux](https://github.com/gorilla/mux) thru routes defined in
+the request path will be routed by [gofiber](https://github.com/gofiber/fiber) thru routes defined in
 `handler.NewRouter` (`/handler/router.go`).

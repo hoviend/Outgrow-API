@@ -5,8 +5,7 @@ import (
 	"outgrow/config"
 	"outgrow/dto"
 	"outgrow/ent"
-	"outgrow/ent/organization"
-	"outgrow/ent/predicate"
+	"outgrow/ent/event"
 	"outgrow/ent/transaction"
 
 	"github.com/google/uuid"
@@ -30,9 +29,15 @@ func (svc *TransactionService) GetTransactions(ctx context.Context, opt dto.GetT
 
 	q := svc.entClient.Transaction.Query()
 
+	if opt.AccountIDFilter != 0 {
+		q = q.Where(
+			transaction.AccountID(opt.AccountIDFilter),
+		)
+	}
+
 	if opt.OrganizationID != uuid.Nil {
 		q = q.Where(
-			transaction.HasEventWith(predicate.Event(organization.IDEQ(opt.OrganizationID))),
+			transaction.HasEventWith(event.OrganizationID(opt.OrganizationID)),
 		)
 	}
 
@@ -41,8 +46,7 @@ func (svc *TransactionService) GetTransactions(ctx context.Context, opt dto.GetT
 	}
 
 	if opt.JoinEvent {
-		q = q.WithEvent().
-			WithEvent(func(eq *ent.EventQuery) { eq.WithType() })
+		q = q.WithEvent(func(eq *ent.EventQuery) { eq.WithType() })
 	}
 
 	total, err := q.Count(ctx)
@@ -52,8 +56,9 @@ func (svc *TransactionService) GetTransactions(ctx context.Context, opt dto.GetT
 	if opt.Paginate != nil {
 		q = q.Offset(opt.Paginate.Offset()).
 			Limit(opt.Paginate.PerPage)
+
+		pagination = opt.Paginate.ToResponse(total)
 	}
-	pagination = opt.Paginate.ToResponse(total)
 
 	q = q.Order(ent.Desc(transaction.FieldCreatedAt))
 

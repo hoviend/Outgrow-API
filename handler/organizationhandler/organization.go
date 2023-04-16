@@ -144,7 +144,7 @@ func (h *OrganizationHandler) GetOrganizationAccountCategories(c *fiber.Ctx) err
 		return err
 	}
 
-	var respData []dto.GetAccountCategoryResponse
+	respData := []dto.GetAccountCategoryResponse{}
 	for _, cat := range categories {
 		var data dto.GetAccountCategoryResponse
 
@@ -177,11 +177,13 @@ func (h *OrganizationHandler) GetOrganizationChartOfAccounts(c *fiber.Ctx) error
 	query.Page = c.QueryInt("page")
 	query.PerPage = c.QueryInt("per_page")
 	query.Name = c.Query("name")
+	query.CategoryID = c.QueryInt("category_id")
 
 	opt := dto.GetOrganizationAccountsOption{
 		Paginate:          &query.PaginateParam,
 		OrganizationID:    organization.ID,
 		AccountNameFilter: query.Name,
+		CategoryID:        query.CategoryID,
 	}
 
 	accounts, paginate, err := h.AccountService.GetOrganizationAccounts(
@@ -222,7 +224,7 @@ func (h *OrganizationHandler) GetOrganizationEventTypes(c *fiber.Ctx) error {
 		return err
 	}
 
-	var respData []dto.OrganizationEventTypeSelectionResponse
+	respData := []dto.OrganizationEventTypeSelectionResponse{}
 	for _, et := range eventTypes {
 		var data dto.OrganizationEventTypeSelectionResponse
 
@@ -320,6 +322,11 @@ func (h *OrganizationHandler) CreateOrganizationEvent(c *fiber.Ctx) error {
 
 	transactions := []*ent.Transaction{}
 	for _, er := range eventType.Rules {
+		account, err := h.AccountService.GetOrganizationAccountByID(ctx, er.AccountID, false)
+		if err != nil {
+			return err
+		}
+
 		var transactionAmount float64
 
 		if er.RuleType == enum.EventRulesFlat {
@@ -342,6 +349,16 @@ func (h *OrganizationHandler) CreateOrganizationEvent(c *fiber.Ctx) error {
 		}
 
 		transactions = append(transactions, transaction)
+
+		updateBalanceParam := dto.UpdateBalanceParam{
+			Account:         account,
+			Amount:          transactionAmount,
+			TransactionType: er.TransactionType,
+		}
+		err = h.AccountService.UpdateBalance(ctx, updateBalanceParam)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = h.TransactionService.CreateTransactions(ctx, transactions)
@@ -360,7 +377,7 @@ func (h *OrganizationHandler) CreateOrganizationEvent(c *fiber.Ctx) error {
 }
 
 func (h *OrganizationHandler) GetOrganizationTransactions(c *fiber.Ctx) error {
-	var query dto.PaginateParam
+	var query dto.GetOrganizationTransactionsParam
 
 	ctx := c.UserContext()
 
@@ -371,12 +388,14 @@ func (h *OrganizationHandler) GetOrganizationTransactions(c *fiber.Ctx) error {
 
 	query.Page = c.QueryInt("page")
 	query.PerPage = c.QueryInt("per_page")
+	query.SearchAccountID = c.QueryInt("account_id")
 
 	opt := dto.GetTransactionsOption{
-		Paginate:       &query,
-		OrganizationID: organization.ID,
-		JoinAccount:    true,
-		JoinEvent:      true,
+		Paginate:        &query.PaginateParam,
+		OrganizationID:  organization.ID,
+		AccountIDFilter: query.SearchAccountID,
+		JoinAccount:     true,
+		JoinEvent:       true,
 	}
 
 	transactions, paginate, err := h.TransactionService.GetTransactions(ctx, opt)

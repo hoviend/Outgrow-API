@@ -140,7 +140,7 @@ func (h *UserHandler) CreateOrganizationByUser(c *fiber.Ctx) error {
 	}
 
 	// if exists then copy all of the data
-	if len(masterEventTypes) > 0 && len(masterAccountTypes) > 0 {
+	if len(masterAccountTypes) > 0 {
 		err = h.OrganizationService.CopyMasters(
 			ctx,
 			org.ID,

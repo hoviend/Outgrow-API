@@ -2,6 +2,7 @@ package dto
 
 import (
 	"outgrow/ent"
+	"outgrow/enum"
 
 	"github.com/google/uuid"
 )
@@ -30,13 +31,15 @@ type DefaultAccountResponse struct {
 
 type GetAccountsParam struct {
 	PaginateParam
-	Name string `json:"name,omitempty"`
+	Name       string `json:"name,omitempty"`
+	CategoryID int    `json:"category_id,omitempty"`
 }
 
 type GetOrganizationAccountsOption struct {
 	Paginate          *PaginateParam
 	OrganizationID    uuid.UUID
 	AccountNameFilter string
+	CategoryID        int
 }
 
 type GetOrganizationAccountTypesOption struct {
@@ -70,4 +73,10 @@ func (r *GetChartofAccountsResponse) BuildResponse(acc *ent.OrganizationAccount)
 	r.CategoryName = acc.Edges.AccCategory.Name
 	r.AccountTypeID = acc.Edges.AccCategory.AccountTypeID
 	r.AccountTypeName = acc.Edges.AccCategory.Edges.Type.Name
+}
+
+type UpdateBalanceParam struct {
+	Account         *ent.OrganizationAccount
+	Amount          float64
+	TransactionType enum.TransactionType
 }

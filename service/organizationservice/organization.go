@@ -2,6 +2,7 @@ package organizationservice
 
 import (
 	"context"
+	"log"
 	"outgrow/config"
 	"outgrow/dto"
 	"outgrow/ent"
@@ -48,10 +49,17 @@ func (svc *OrganizationService) CopyMasters(
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			err = tx.Rollback()
+			if err != nil {
+				log.Printf("rollback failed: %v", err)
+				return
+			}
 			return
 		}
-		tx.Commit()
+		err = tx.Commit()
+		if err != nil {
+			log.Printf("commit failed: %v", err)
+		}
 	}()
 
 	for _, at := range masterAccountTypes {

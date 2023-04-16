@@ -7,10 +7,11 @@ import (
 )
 
 type GetTransactionsOption struct {
-	Paginate       *PaginateParam
-	OrganizationID uuid.UUID
-	JoinAccount    bool
-	JoinEvent      bool
+	Paginate        *PaginateParam
+	OrganizationID  uuid.UUID
+	JoinAccount     bool
+	JoinEvent       bool
+	AccountIDFilter int
 }
 
 type CreateOrganizationEventPayload struct {
